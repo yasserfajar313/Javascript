@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title> Keliling & Luas Bangun Datar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+      color: #1d2129;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    h3 {
+        border-bottom: 2px solid #4a90e2;
+        padding-bottom: 5px;
+        color: #4a90e2;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #4b4f56;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccd0d5;
+      border-radius: 6px;
+      box-sizing: border-box;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        outline: none;
+    }
+    .btn-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-hitung {
+      background: #4CAF50;
+      color: white;
+    }
+    .btn-hitung:hover {
+      background: #45a049;
+    }
+    .btn-reset {
+      background: #e53935;
+      color: white;
+    }
+    .btn-reset:hover {
+      background: #d32f2f;
+    }
+    .hasil {
+      margin-top: 25px;
+      padding: 15px;
+      background: #e9f2fe;
+      border-left: 5px solid #4a90e2;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .hasil p {
+        margin: 6px 0;
+    }
+    .rumus {
+        font-style: italic;
+        color: #555;
+        margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Keliling & Luas Bangun Datar 📐</h2>
+  <div class="container">
+    <h3>Persegi Panjang</h3>
+    <label for="panjang">Panjang:</label>
+    <input type="number" id="panjang" value="10">
+    <label for="lebar">Lebar:</label>
+    <input type="number" id="lebar" value="5">
+
+    <h3>Bujur Sangkar</h3>
+    <label for="sisi">Sisi:</label>
+    <input type="number" id="sisi" value="7">
+
+    <h3>Segitiga</h3>
+    <label for="alas">Alas:</label>
+    <input type="number" id="alas" value="8">
+    <label for="tinggi">Tinggi:</label>
+    <input type="number" id="tinggi" value="6">
+    <label for="sisiA">Sisi A:</label>
+    <input type="number" id="sisiA" value="5">
+    <label for="sisiB">Sisi B:</label>
+    <input type="number" id="sisiB" value="7">
+    <label for="sisiC">Sisi C:</label>
+    <input type="number" id="sisiC" value="9">
+
+    <div class="btn-group">
+      <button class="btn-hitung" type="button" onclick="hitungDanTampilkan()">Hitung</button>
+      <button class="btn-reset" type="button" onclick="resetForm()">Reset</button>
+    </div>
+
+    <div class="hasil" id="output"></div>
+  </div>
+
+  <script>
+    // --- Fungsi Perhitungan ---
+    const luasPersegiPanjang = (p, l) => p * l;
+    const kelilingPersegiPanjang = (p, l) => 2 * (p + l);
+
+    const luasBujurSangkar = (s) => s * s;
+    const kelilingBujurSangkar = (s) => 4 * s;
+
+    const luasSegitiga = (a, t) => 0.5 * a * t;
+    const kelilingSegitiga = (a, b, c) => a + b + c;
+
+    // --- Fungsi utama tampilan hasil ---
+    function hitungDanTampilkan() {
+      const p = parseFloat(document.getElementById("panjang").value);
+      const l = parseFloat(document.getElementById("lebar").value);
+      const s = parseFloat(document.getElementById("sisi").value);
+      const alas = parseFloat(document.getElementById("alas").value);
+      const tinggi = parseFloat(document.getElementById("tinggi").value);
+      const sisiA = parseFloat(document.getElementById("sisiA").value);
+      const sisiB = parseFloat(document.getElementById("sisiB").value);
+      const sisiC = parseFloat(document.getElementById("sisiC").value);
+
+      let hasilHTML = "";
+
+      // Persegi Panjang
+      if (!isNaN(p) && !isNaN(l)) {
+        hasilHTML += `
+          <p><b>Persegi Panjang:</b></p>
+          <p class="rumus">Rumus Luas = p × l</p>
+          <p>Luas = ${p} × ${l} = <b>${luasPersegiPanjang(p, l)}</b></p>
+          <p class="rumus">Rumus Keliling = 2 × (p + l)</p>
+          <p>Keliling = 2 × (${p} + ${l}) = <b>${kelilingPersegiPanjang(p, l)}</b></p>
+        `;
+      }
+
+      // Bujur Sangkar
+      if (!isNaN(s)) {
+        hasilHTML += `
+          <p><b>Bujur Sangkar:</b></p>
+          <p class="rumus">Rumus Luas = sisi × sisi</p>
+          <p>Luas = ${s} × ${s} = <b>${luasBujurSangkar(s)}</b></p>
+          <p class="rumus">Rumus Keliling = 4 × sisi</p>
+          <p>Keliling = 4 × ${s} = <b>${kelilingBujurSangkar(s)}</b></p>
+        `;
+      }
+
+      // Segitiga
+      if (!isNaN(alas) && !isNaN(tinggi) && !isNaN(sisiA) && !isNaN(sisiB) && !isNaN(sisiC)) {
+        hasilHTML += `
+          <p><b>Segitiga:</b></p>
+          <p class="rumus">Rumus Luas = ½ × alas × tinggi</p>
+          <p>Luas = 0.5 × ${alas} × ${tinggi} = <b>${luasSegitiga(alas, tinggi)}</b></p>
+          <p class="rumus">Rumus Keliling = sisi A + sisi B + sisi C</p>
+          <p>Keliling = ${sisiA} + ${sisiB} + ${sisiC} = <b>${kelilingSegitiga(sisiA, sisiB, sisiC)}</b></p>
+        `;
+      }
+
+      document.getElementById("output").innerHTML = hasilHTML || "<i>Masukkan angka terlebih dahulu</i>";
+    }
+
+    // --- Fungsi reset input ---
+    function resetForm() {
+      document.querySelectorAll('input[type="number"]').forEach(el => el.value = "");
+      document.getElementById("output").innerHTML = "<i>Semua input sudah direset</i>";
+    }
+
+    // --- Auto-update realtime ketika input diubah ---
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+      input.addEventListener('input', hitungDanTampilkan);
+    });
+
+    hitungDanTampilkan();
+  </script>
+</body>
+</html>
