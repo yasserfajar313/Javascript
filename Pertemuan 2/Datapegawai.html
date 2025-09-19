@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Final - Aplikasi Data Pegawai</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+    /* ===== Global ===== */
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 24px;
+        background-color: #f7f9fc;
+        color: #2c3e50;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 24px;
+        color: #1a2b48;
+        font-size: 28px;
+    }
+
+    /* ===== Form Card ===== */
+    .form-card {
+        max-width: 1280px;
+        margin: 0 auto 24px;
+        padding: 28px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e8eef3;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px 28px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 15px;
+        color: #34495e;
+    }
+
+    input,
+    select {
+        padding: 12px 14px;
+        border: 1px solid #d0d6dc;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    /* ===== Controls (Buttons) ===== */
+    .controls {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    button {
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 15px;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    button:active {
+        transform: scale(0.98);
+    }
+
+    .btn-add {
+        background-color: #3498db;
+        color: #fff;
+    }
+
+    .btn-update {
+        background-color: #27ae60;
+        color: #fff;
+    }
+
+    .btn-cancel {
+        background-color: #95a5a6;
+        color: #fff;
+    }
+
+    .btn-cancel:active {
+        background-color: #c0392b;
+    }
+
+    .btn-pdf {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+
+    /* ===== Search Box ===== */
+    .search-container {
+        max-width: 1280px;
+        margin: 20px auto 15px;
+    }
+
+    #search-input {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 15px;
+        border-radius: 8px;
+        border: 1px solid #d0d6dc;
+        box-sizing: border-box;
+    }
+
+    #search-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    /* ===== Table ===== */
+    table {
+        width: 1280px;
+        max-width: 100%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    thead {
+        background-color: #2c3e50;
+        color: #fff;
+    }
+
+    thead th {
+        padding: 14px 16px;
+        vertical-align: middle;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    thead th:nth-child(5),
+    thead th:nth-child(13) {
+        text-align: center;
+    }
+
+    thead th:nth-child(8),
+    thead th:nth-child(9),
+    thead th:nth-child(10),
+    thead th:nth-child(11),
+    thead th:nth-child(12) {
+        text-align: right;
+    }
+
+    tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e8eef3;
+        font-size: 15px;
+        vertical-align: middle;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #fcfdfe;
+    }
+
+    tbody tr:hover {
+        background-color: #f0f6ff;
+    }
+
+    /* ===== Table Helpers ===== */
+    .text-left { text-align: left; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .no-wrap { white-space: nowrap; }
+    .small-text { font-size: 14px; color: #333; }
+    .muted-text { color: #7f8c8d; font-size: 13px; margin-top: 4px; }
+
+    /* ===== Action Buttons in Table ===== */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .action-btn {
+        padding: 7px 12px;
+        font-size: 14px;
+    }
+
+    .edit-btn {
+        background-color: #f1c40f;
+        color: #333;
+    }
+
+    .del-btn {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+
+    /* ===== Table Footer ===== */
+    tfoot {
+        background-color: #ecf0f1;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1100px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        table,
+        .form-card,
+        .search-container {
+            width: 95%;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+    <h2>Aplikasi Data Pegawai</h2>
+
+    <div class="form-card">
+        <h3 id="form-title">Tambah Pegawai Baru</h3>
+        <div class="form-grid">
+             <div class="field"><label for="nama">Nama Pegawai</label><input type="text" id="nama" placeholder="Masukkan nama lengkap"></div>
+            <div class="field"><label for="jk">Jenis Kelamin</label><select id="jk"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
+            <div class="field"><label for="tglLahir">Tanggal Lahir</label><input type="date" id="tglLahir"><span class="muted-text" id="umurInfo">Umur akan dihitung otomatis</span></div>
+            <div class="field"><label for="umur">Umur (Otomatis)</label><input type="number" id="umur" readonly style="background-color: #ecf0f1;"></div>
+            <div class="field"><label for="jabatan">Jabatan</label><select id="jabatan"><option value="">-- Pilih Jabatan --</option><option value="Manajer">Manajer</option><option value="Asisten Manajer">Asisten Manajer</option><option value="Staff">Staff</option><option value="Lainnya">Lainnya</option></select><input type="text" id="jabatanLainnya" placeholder="Ketik jabatan baru..." style="display:none; margin-top:8px;"></div>
+            <div class="field"><label for="status">Status Pernikahan</label><select id="status"><option value="menikah">Menikah</option><option value="belum menikah">Belum Menikah</option></select></div>
+            <div class="field"><label for="gapok">Gaji Pokok (Rp)</label><input type="number" id="gapok" value="5000000" min="0"></div>
+            <div class="field"><label for="tjPersen">Tunjangan Jabatan (%)</label><input type="number" id="tjPersen" value="15" min="0"></div>
+            <div class="field"><label for="bpjsPersen">BPJS (%)</label><input type="number" id="bpjsPersen" value="10" min="0"></div>
+            <div class="field"><label for="keluargaPersen">Tunjangan Keluarga (%) (jika menikah)</label><input type="number" id="keluargaPersen" value="20" min="0"></div>
+        </div>
+        <div class="controls">
+            <button id="btn-submit" class="btn-add">Tambah Pegawai</button>
+            <button id="btn-cancel" class="btn-cancel" style="display:none">Batal</button>
+        </div>
+    </div>
+    
+    <div class="search-container">
+        <input type="search" id="search-input" placeholder="🔍   Cari berdasarkan Nama, Jabatan, atau Status...">
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Diperbarui</th><th>Nama</th><th>Jenis Kelamin</th><th>Tgl Lahir</th><th>Umur</th><th>Jabatan</th>
+                <th>Status</th><th>Gaji Pokok</th><th>Tunj. Jabatan</th><th>BPJS</th><th>Tunj. Keluarga</th><th>Total Gaji</th><th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="dataPegawai"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="11" class="text-right" style="padding-right: 20px;">Total keseluruhan Gaji</td>
+                <td id="sumTotal" class="text-right">Rp 0</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div style="text-align:center; margin-top:20px; margin-bottom: 40px;">
+        <button class="btn-pdf" onclick="cetakPDF()">Cetak Laporan PDF</button>
+    </div>
+
+    <script>
+        let pegawai = [];
+        const form = {
+            title: document.getElementById('form-title'), nama: document.getElementById('nama'), jk: document.getElementById('jk'),
+            tglLahir: document.getElementById('tglLahir'), umur: document.getElementById('umur'), umurInfo: document.getElementById('umurInfo'),
+            jabatan: document.getElementById('jabatan'), jabatanLainnya: document.getElementById('jabatanLainnya'), status: document.getElementById('status'),
+            gapok: document.getElementById('gapok'), tjPersen: document.getElementById('tjPersen'), bpjsPersen: document.getElementById('bpjsPersen'),
+            keluargaPersen: document.getElementById('keluargaPersen'), btnSubmit: document.getElementById('btn-submit'), btnCancel: document.getElementById('btn-cancel')
+        };
+        const tableBody = document.getElementById('dataPegawai');
+        const totalGajiFooter = document.getElementById('sumTotal');
+        const searchInput = document.getElementById('search-input');
+
+        const STORAGE_KEY = 'dataPegawaiApp';
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(pegawai)); }
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                pegawai = JSON.parse(savedData);
+            } else {
+                const today = new Date();
+                const dob = new Date(today.getFullYear() - 28, 5, 15);
+                pegawai.push({ id: Date.now(), nama: 'Dodi Prayodi', jk: 'Laki-laki', tglLahir: dob.toISOString().slice(0, 10), umur: 28, jabatan: 'Manajer', status: 'menikah', gapok: 15000000, tjPersen: 15, bpjsPersen: 10, keluargaPersen: 20, updatedAt: nowISO() });
+            }
+        }
+
+        const fmtRupiah = (n) => 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
+        const fmtDate = (d) => { if (!d) return '-'; const dt = new Date(d); if (isNaN(dt)) return '-'; const dd = String(dt.getDate()).padStart(2, '0'); const mm = String(dt.getMonth() + 1).padStart(2, '0'); const yyyy = dt.getFullYear(); const hh = String(dt.getHours()).padStart(2, '0'); const mi = String(dt.getMinutes()).padStart(2, '0'); return `${dd}-${mm}-${yyyy} ${hh}:${mi}`; };
+        const calcAgeFromDate = (dobStr) => { if (!dobStr) return null; const dob = new Date(dobStr); if (isNaN(dob)) return null; const diff_ms = Date.now() - dob.getTime(); const age_dt = new Date(diff_ms); return Math.abs(age_dt.getUTCFullYear() - 1970); };
+        const nowISO = () => new Date().toISOString();
+        
+        function hitungKomponen(p) { const gapok = Number(p.gapok) || 0; const tj = (Number(p.tjPersen) / 100) * gapok; const bpjs = (Number(p.bpjsPersen) / 100) * gapok; const tunjkel = (p.status === 'menikah') ? ((Number(p.keluargaPersen) / 100) * gapok) : 0; const total = gapok + tj + bpjs + tunjkel; return { tj, bpjs, tunjkel, total }; }
+
+        function renderTabel() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredPegawai = pegawai.filter(p => p.nama.toLowerCase().includes(searchTerm) || p.jabatan.toLowerCase().includes(searchTerm) || p.status.toLowerCase().includes(searchTerm));
+            tableBody.innerHTML = '';
+            let totalSemuaGaji = 0;
+            filteredPegawai.forEach((p) => {
+                p.umur = calcAgeFromDate(p.tglLahir) ?? p.umur;
+                const komponen = hitungKomponen(p);
+                totalSemuaGaji += komponen.total;
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="small-text no-wrap text-left">${fmtDate(p.updatedAt)}</td><td class="no-wrap text-left">${p.nama}</td><td class="no-wrap text-left">${p.jk}</td><td class="no-wrap text-center">${p.tglLahir ? p.tglLahir.split('-').reverse().join('-') : '-'}</td><td class="text-center">${p.umur ?? '-'}</td><td class="no-wrap text-left">${p.jabatan}</td><td class="no-wrap text-left">${p.status}</td><td class="no-wrap text-right">${fmtRupiah(p.gapok)}</td><td class="no-wrap text-right">${fmtRupiah(komponen.tj)}</td><td class="no-wrap text-right">${fmtRupiah(komponen.bpjs)}</td><td class="no-wrap text-right">${fmtRupiah(komponen.tunjkel)}</td><td class="no-wrap text-right"><b>${fmtRupiah(komponen.total)}</b></td><td class="text-center"><div class="action-buttons"><button class="action-btn edit-btn" onclick="startEdit(${p.id})">Edit</button><button class="action-btn del-btn" onclick="hapusPegawai(${p.id})">Hapus</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+            totalGajiFooter.innerText = fmtRupiah(totalSemuaGaji);
+        }
+        
+        function readForm() { let jabatanValue = form.jabatan.value; if (jabatanValue === 'Lainnya') { jabatanValue = form.jabatanLainnya.value.trim() || 'Tidak Diketahui'; } return { nama: form.nama.value.trim(), jk: form.jk.value, tglLahir: form.tglLahir.value || null, umur: Number(form.umur.value) || null, jabatan: jabatanValue, status: form.status.value, gapok: Number(form.gapok.value) || 0, tjPersen: Number(form.tjPersen.value) || 0, bpjsPersen: Number(form.bpjsPersen.value) || 0, keluargaPersen: Number(form.keluargaPersen.value) || 0 }; }
+        function validateForm(data) { if (!data.nama) { alert('Nama pegawai harus diisi.'); return false; } if (!data.jabatan || data.jabatan === '-- Pilih Jabatan --') { alert('Jabatan harus dipilih.'); return false; } if (data.gapok <= 0) { alert('Gaji pokok harus lebih besar dari 0.'); return false; } return true; }
+        
+        function tambahPegawai() { const data = readForm(); if (!validateForm(data)) return; data.id = Date.now(); data.updatedAt = nowISO(); pegawai.push(data); saveData(); renderTabel(); alert('Pegawai baru berhasil ditambahkan!'); resetForm(); }
+        function onJabatanChange() { const pilihan = form.jabatan.value; if (pilihan === 'Manajer') { form.gapok.value = 15000000; } else if (pilihan === 'Asisten Manajer') { form.gapok.value = 10000000; } else if (pilihan === 'Staff') { form.gapok.value = 5000000; } form.jabatanLainnya.style.display = pilihan === 'Lainnya' ? 'block' : 'none'; }
+        
+        function hapusPegawai(id) { if (!confirm('Apakah Anda yakin ingin menghapus data pegawai ini?')) return; pegawai = pegawai.filter(p => p.id !== id); saveData(); renderTabel(); alert('Data pegawai berhasil dihapus.'); }
+        let editingId = null;
+        function startEdit(id) { const p = pegawai.find(e => e.id === id); if (!p) return; editingId = id; form.title.innerText = 'Edit Pegawai'; form.btnSubmit.innerText = 'Simpan Perubahan'; form.btnSubmit.className = 'btn-update'; form.btnSubmit.onclick = updatePegawai; form.btnCancel.style.display = 'inline-block'; form.nama.value = p.nama; form.jk.value = p.jk; form.tglLahir.value = p.tglLahir; form.umur.value = p.umur ?? ''; form.jabatan.value = (['Manajer', 'Asisten Manajer', 'Staff'].includes(p.jabatan)) ? p.jabatan : 'Lainnya'; if (form.jabatan.value === 'Lainnya') { form.jabatanLainnya.value = p.jabatan; form.jabatanLainnya.style.display = 'block'; } else { form.jabatanLainnya.value = ''; form.jabatanLainnya.style.display = 'none'; } form.status.value = p.status; form.gapok.value = p.gapok; form.tjPersen.value = p.tjPersen; form.bpjsPersen.value = p.bpjsPersen; form.keluargaPersen.value = p.keluargaPersen; }
+        function updatePegawai() { if (editingId === null) return; const data = readForm(); if (!validateForm(data)) return; const index = pegawai.findIndex(p => p.id === editingId); if (index === -1) return; data.id = editingId; data.updatedAt = nowISO(); pegawai[index] = data; saveData(); renderTabel(); alert('Data pegawai berhasil diperbarui!'); resetForm(); }
+        
+        //  versi resetFormnya
+        function resetForm() {
+            form.nama.value = '';
+            form.jk.value = 'Laki-laki';
+            form.tglLahir.value = '';
+            form.umur.value = '';
+            form.umurInfo.innerText = 'Umur akan dihitung otomatis';
+            form.jabatan.value = '';
+            form.jabatanLainnya.value = '';
+            form.jabatanLainnya.style.display = 'none';
+            form.status.value = 'belum menikah';
+            form.gapok.value = 5000000;
+            form.tjPersen.value = 15;
+            form.bpjsPersen.value = 10;
+            form.keluargaPersen.value = 20;
+            form.title.innerText = 'Tambah Pegawai Baru';
+            form.btnSubmit.innerText = 'Tambah Pegawai';
+            form.btnSubmit.className = 'btn-add';
+            form.btnSubmit.onclick = tambahPegawai;
+            form.btnCancel.style.display = 'none';
+        }
+        
+        function cetakPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(16); doc.text('Laporan Data Pegawai', 14, 20); doc.setFontSize(10); doc.text(`Dicetak: ${fmtDate(nowISO())}`, 14, 28); const head = [['Nama', 'Jabatan', 'Status', 'Gaji Pokok', 'Tunj. Jabatan', 'BPJS', 'Tunj. Keluarga', 'Total Gaji']]; const body = pegawai.map(p => { const k = hitungKomponen(p); return [p.nama, p.jabatan, p.status, fmtRupiah(p.gapok), fmtRupiah(k.tj), fmtRupiah(k.bpjs), fmtRupiah(k.tunjkel), fmtRupiah(k.total)]; }); doc.autoTable({ startY: 34, head: head, body: body, theme: 'grid', headStyles: { fillColor: [44, 62, 80] }, styles: { fontSize: 9 }, }); doc.save('laporan_pegawai.pdf'); }
+        form.tglLahir.addEventListener('change', () => { const umur = calcAgeFromDate(form.tglLahir.value); if (umur !== null) { form.umur.value = umur; form.umurInfo.innerText = `Umur: ${umur} tahun`; } else { form.umur.value = ''; form.umurInfo.innerText = 'Umur akan dihitung otomatis'; } });
+        form.jabatan.addEventListener('change', onJabatanChange);
+        form.btnSubmit.onclick = tambahPegawai;
+        form.btnCancel.onclick = resetForm;
+        searchInput.addEventListener('input', renderTabel);
+        loadData(); renderTabel();
+    </script>
+</body>
+</html>
