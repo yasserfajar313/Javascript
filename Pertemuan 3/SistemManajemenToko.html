@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Final - Aplikasi Produk Toko</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      /* === Global === */
+      body {
+        font-family: "Poppins", "Segoe UI", sans-serif;
+        margin: 20px;
+        background: linear-gradient(135deg, #0d0d1a, #1a1a2e);
+        color: #e0e0e0;
+        transition: background 0.5s;
+      }
+
+      /* === Headings === */
+      h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-size: 28px;
+        color: #00f0ff;
+        text-shadow: 0 0 6px #00f0ff, 0 0 12px #00c0ff;
+        transition: color 0.3s, text-shadow 0.3s;
+      }
+
+      /* === Grid Layout === */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      /* === Card === */
+      .form-card,
+      .transaksi {
+        padding: 25px;
+        background: rgba(20, 20, 35, 0.75);
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.15),
+          0 0 50px rgba(0, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .form-card:hover,
+      .transaksi:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 40px rgba(0, 255, 255, 0.3),
+          0 0 60px rgba(0, 255, 255, 0.2);
+      }
+
+      /* === Form Grid === */
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s;
+      }
+
+      label {
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #00f0ff;
+        text-shadow: 0 0 2px #00f0ff;
+      }
+
+      /* === Inputs & Selects === */
+      input,
+      select {
+        padding: 12px;
+        border: 1px solid #00f0ff;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #00fff0;
+        box-shadow: 0 0 8px #00fff0, 0 0 20px #00c0ff;
+        outline: none;
+      }
+
+      /* === Buttons === */
+      .controls,
+      .controls-struk {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 12px 22px;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      button::after {
+        content: "";
+        position: absolute;
+        left: -50%;
+        top: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          rgba(0, 255, 255, 0.3),
+          rgba(0, 255, 255, 0)
+        );
+        transform: rotate(45deg);
+        transition: all 0.5s ease;
+      }
+      button:hover::after {
+        left: 0;
+        top: 0;
+        animation: pulse 1s infinite;
+      }
+
+      /* Neon pulse animation */
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1) rotate(45deg);
+        }
+        50% {
+          transform: scale(1.05) rotate(45deg);
+        }
+      }
+
+      /* Button colors */
+      .btn-add {
+        background: #00f0ff;
+        color: #000;
+      }
+      .btn-add:hover {
+        background: #00c0ff;
+      }
+
+      .btn-update {
+        background: #0ff07f;
+        color: #000;
+      }
+      .btn-update:hover {
+        background: #0fc078;
+      }
+
+      .btn-cancel {
+        background: #ff4d4d;
+      }
+      .btn-cancel:hover {
+        background: #ff1a1a;
+      }
+
+      .btn-pdf {
+        background: #9b59b6;
+      }
+      .btn-pdf:hover {
+        background: #7d3c98;
+      }
+
+      /* === Search Box === */
+      .search-box {
+        max-width: 1200px;
+        margin: 25px auto;
+      }
+      .search-box input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #00f0ff;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+      .search-box input:focus {
+        border-color: #00fff0;
+        box-shadow: 0 0 8px #00fff0, 0 0 20px #00c0ff;
+      }
+
+      /* === Table === */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(20, 20, 35, 0.85);
+        color: #fff;
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+        transition: all 0.3s ease;
+      }
+
+      thead {
+        background: #00f0ff;
+        color: #000;
+      }
+      thead th {
+        padding: 14px;
+        text-align: left;
+        transition: all 0.3s;
+      }
+      tbody td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+      }
+      tbody tr:nth-child(even) {
+        background: rgba(0, 0, 0, 0.2);
+      }
+      tbody tr:hover {
+        background: rgba(0, 255, 255, 0.15);
+        transform: scale(1.01);
+      }
+
+      /* === Action Buttons === */
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+      .edit-btn {
+        background: #f1c40f;
+        color: #000;
+        border-radius: 8px;
+        padding: 6px 12px;
+        transition: all 0.3s;
+      }
+      .edit-btn:hover {
+        background: #d4ac0d;
+        transform: scale(1.05);
+      }
+      .del-btn {
+        background: #e74c3c;
+        color: #fff;
+        border-radius: 8px;
+        padding: 6px 12px;
+        transition: all 0.3s;
+      }
+      .del-btn:hover {
+        background: #c0392b;
+        transform: scale(1.05);
+      }
+
+      /* === Responsive === */
+      @media (max-width: 1024px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 768px) {
+        body {
+          margin: 15px;
+        }
+        .controls,
+        .controls-struk {
+          flex-direction: column;
+          gap: 10px;
+        }
+        table thead {
+          font-size: 14px;
+        }
+        table tbody td {
+          font-size: 14px;
+          padding: 8px;
+        }
+      }
+      @media (max-width: 480px) {
+        h2 {
+          font-size: 20px;
+        }
+        button {
+          width: 100%;
+        }
+        input,
+        select {
+          font-size: 14px;
+          padding: 8px;
+        }
+        .form-card,
+        .transaksi {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Aplikasi Manajemen Produk Toko</h2>
+
+    <div class="main-grid">
+      <div class="form-card">
+        <h3 id="form-title">Tambah Produk Baru</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="idProduk">Kode ID</label
+            ><input type="text" id="idProduk" placeholder="Isi kode ID" />
+          </div>
+          <div class="field">
+            <label for="nama">Nama Produk</label
+            ><input type="text" id="nama" placeholder="Nama produk" />
+          </div>
+          <div class="field">
+            <label for="stok">Stok</label
+            ><input type="number" id="stok" value="0" min="0" />
+          </div>
+          <div class="field">
+            <label for="harga">Harga (Rp)</label
+            ><input type="number" id="harga" value="0" min="0" />
+          </div>
+        </div>
+        <div class="controls">
+          <button id="btn-submit" class="btn-add">Tambah Produk</button>
+          <button id="btn-cancel" class="btn-cancel" style="display: none">
+            Batal
+          </button>
+        </div>
+      </div>
+
+      <div class="transaksi">
+        <h3>Transaksi Belanja</h3>
+        <div class="field">
+          <label for="namaPelanggan">Nama Pelanggan</label
+          ><input
+            type="text"
+            id="namaPelanggan"
+            placeholder="Masukkan nama pelanggan"
+          />
+        </div>
+        <form id="formTransaksi">
+          <select id="produkSelect" required></select>
+          <input
+            type="number"
+            id="jumlahBeli"
+            placeholder="Jumlah Beli"
+            required
+            min="1"
+          />
+        </form>
+        <div class="field">
+          <label for="diskonManual">Diskon (%)</label
+          ><input type="number" id="diskonManual" value="0" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label for="jumlahBayar">Jumlah Bayar</label
+          ><input
+            type="number"
+            id="jumlahBayar"
+            placeholder="Masukkan uang bayar"
+          />
+        </div>
+        <div id="daftarKeranjang"></div>
+        <div class="controls-struk">
+          <button id="btn-keranjang" class="btn-add">
+            + Tambah ke Keranjang
+          </button>
+          <button class="btn-pdf" onclick="cetakStruk()">🖨 Cetak Struk</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Cari produk..." />
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama</th>
+          <th>Harga</th>
+          <th>Stok</th>
+          <th>Waktu Input</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="dataProduk"></tbody>
+    </table>
+
+    <script>
+      let produkToko = [];
+      let keranjang = [];
+      let editingId = null;
+
+      const form = {
+        id: document.getElementById("idProduk"),
+        nama: document.getElementById("nama"),
+        harga: document.getElementById("harga"),
+        stok: document.getElementById("stok"),
+        btnSubmit: document.getElementById("btn-submit"),
+        btnCancel: document.getElementById("btn-cancel"),
+        title: document.getElementById("form-title"),
+      };
+      const tableBody = document.getElementById("dataProduk");
+      const searchInput = document.getElementById("search");
+      const produkSelect = document.getElementById("produkSelect");
+      const keranjangDiv = document.getElementById("daftarKeranjang");
+      const diskonManual = document.getElementById("diskonManual");
+      const namaPelanggan = document.getElementById("namaPelanggan");
+      const jumlahBayar = document.getElementById("jumlahBayar");
+      const btnKeranjang = document.getElementById("btn-keranjang");
+
+      const fmtRupiah = (n) => "Rp " + (Number(n) || 0).toLocaleString("id-ID");
+
+      // 🔹 LocalStorage
+      function saveData() {
+        localStorage.setItem("produkToko", JSON.stringify(produkToko));
+        localStorage.setItem("keranjang", JSON.stringify(keranjang));
+      }
+      function loadData() {
+        const produkSaved = localStorage.getItem("produkToko");
+        const keranjangSaved = localStorage.getItem("keranjang");
+        if (produkSaved) produkToko = JSON.parse(produkSaved);
+        else {
+          // data default
+          produkToko = [
+            {
+              id: "P-001",
+              nama: "Laptop",
+              harga: 7000000,
+              stok: 5,
+              waktuInput: new Date().toLocaleString(),
+            },
+            {
+              id: "P-002",
+              nama: "Mouse",
+              harga: 200000,
+              stok: 10,
+              waktuInput: new Date().toLocaleString(),
+            },
+            {
+              id: "P-003",
+              nama: "Keyboard",
+              harga: 350000,
+              stok: 7,
+              waktuInput: new Date().toLocaleString(),
+            },
+          ];
+        }
+        if (keranjangSaved) keranjang = JSON.parse(keranjangSaved);
+      }
+
+      // 🔹 Render tabel
+      function renderTabel(filter = "") {
+        tableBody.innerHTML = "";
+        produkToko
+          .filter((p) => p.nama.toLowerCase().includes(filter.toLowerCase()))
+          .forEach((p) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${p.id}</td><td>${p.nama}</td><td>${fmtRupiah(
+              p.harga
+            )}</td><td>${p.stok}</td><td>${
+              p.waktuInput
+            }</td><td><div class="action-buttons"><button class="edit-btn" onclick="startEdit('${
+              p.id
+            }')">Edit</button><button class="del-btn" onclick="hapusProduk('${
+              p.id
+            }')">Hapus</button></div></td>`;
+            tableBody.appendChild(row);
+          });
+        produkSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        produkToko.forEach(
+          (p) =>
+            (produkSelect.innerHTML += `<option value="${p.id}">${
+              p.nama
+            } - ${fmtRupiah(p.harga)} (stok ${p.stok})</option>`)
+        );
+        saveData();
+      }
+
+      // 🔹 Produk CRUD
+      function tambahProduk() {
+        const id = form.id.value.trim();
+        const nama = form.nama.value.trim();
+        const harga = Number(form.harga.value) || 0;
+        const stok = Number(form.stok.value) || 0;
+        if (!id || !nama) {
+          alert("ID dan Nama wajib diisi!");
+          return;
+        }
+        if (produkToko.find((p) => p.id === id)) {
+          alert("ID sudah ada!");
+          return;
+        }
+        produkToko.push({
+          id,
+          nama,
+          harga,
+          stok,
+          waktuInput: new Date().toLocaleString(),
+        });
+        renderTabel(searchInput.value);
+        resetForm();
+      }
+      function hapusProduk(id) {
+        if (!confirm("Yakin ingin menghapus produk ini?")) return;
+        produkToko = produkToko.filter((p) => p.id !== id);
+        renderTabel(searchInput.value);
+      }
+      function startEdit(id) {
+        const p = produkToko.find((x) => x.id === id);
+        if (!p) return;
+        editingId = id;
+        form.title.innerText = "Edit Produk";
+        form.btnSubmit.innerText = "Simpan Perubahan";
+        form.btnSubmit.className = "btn-update";
+        form.btnSubmit.onclick = updateProduk;
+        form.btnCancel.style.display = "inline-block";
+        form.id.value = p.id;
+        form.id.disabled = true;
+        form.nama.value = p.nama;
+        form.harga.value = p.harga;
+        form.stok.value = p.stok;
+      }
+      function updateProduk() {
+        const nama = form.nama.value.trim();
+        const harga = Number(form.harga.value) || 0;
+        const stok = Number(form.stok.value) || 0;
+        if (!nama) {
+          alert("Nama produk wajib diisi!");
+          return;
+        }
+        const index = produkToko.findIndex((p) => p.id === editingId);
+        if (index === -1) return;
+        produkToko[index] = {
+          id: editingId,
+          nama,
+          harga,
+          stok,
+          waktuInput: produkToko[index].waktuInput,
+        };
+        renderTabel(searchInput.value);
+        resetForm();
+      }
+      function resetForm() {
+        form.id.value = "";
+        form.id.disabled = false;
+        form.nama.value = "";
+        form.harga.value = 0;
+        form.stok.value = 0;
+        form.title.innerText = "Tambah Produk Baru";
+        form.btnSubmit.innerText = "Tambah Produk";
+        form.btnSubmit.className = "btn-add";
+        form.btnSubmit.onclick = tambahProduk;
+        form.btnCancel.style.display = "none";
+        editingId = null;
+      }
+
+      // 🔹 Keranjang
+      btnKeranjang.addEventListener("click", function (e) {
+        e.preventDefault();
+        const produkId = produkSelect.value;
+        const jumlah = Number(document.getElementById("jumlahBeli").value);
+        if (!produkId || !jumlah) return;
+        const produk = produkToko.find((p) => p.id === produkId);
+        if (!produk || jumlah > produk.stok) {
+          alert("Stok tidak cukup!");
+          return;
+        }
+        produk.stok -= jumlah;
+        let item = keranjang.find((k) => k.id === produk.id);
+        if (item) {
+          item.jumlah += jumlah;
+          item.total = item.jumlah * produk.harga;
+        } else {
+          keranjang.push({ ...produk, jumlah, total: jumlah * produk.harga });
+        }
+        renderTabel(searchInput.value);
+        renderKeranjang();
+        document.getElementById("formTransaksi").reset();
+      });
+
+      function renderKeranjang() {
+        if (keranjang.length === 0) {
+          keranjangDiv.innerHTML = "<p>Keranjang masih kosong.</p>";
+          saveData();
+          return;
+        }
+        let html =
+          "<table><thead><tr><th>Nama</th><th>Harga</th><th>Jumlah</th><th>Total</th><th>Aksi</th></tr></thead><tbody>";
+        let grandTotal = 0;
+        keranjang.forEach((k, i) => {
+          html += `<tr><td>${k.nama}</td><td>${fmtRupiah(k.harga)}</td><td>${
+            k.jumlah
+          }</td><td>${fmtRupiah(
+            k.total
+          )}</td><td><button class="del-btn" onclick="batalItem(${i})">Batal</button></td></tr>`;
+          grandTotal += k.total;
+        });
+        let diskonPersen = Number(diskonManual.value) || 0;
+        let diskon = grandTotal * (diskonPersen / 100);
+        let totalAkhir = grandTotal - diskon;
+        let bayar = Number(jumlahBayar.value) || 0;
+        let kembalian = bayar - totalAkhir;
+        html += `<tr><th colspan="4">Subtotal</th><th>${fmtRupiah(
+          grandTotal
+        )}</th></tr>`;
+        if (diskonPersen > 0)
+          html += `<tr><th colspan="4">Diskon ${diskonPersen}%</th><th>- ${fmtRupiah(
+            diskon
+          )}</th></tr>`;
+        html += `<tr><th colspan="4">Total Bayar</th><th>${fmtRupiah(
+          totalAkhir
+        )}</th></tr>`;
+        if (bayar > 0) {
+          html += `<tr><th colspan="4">Bayar</th><th>${fmtRupiah(
+            bayar
+          )}</th></tr>`;
+          html += `<tr><th colspan="4">Kembalian</th><th>${fmtRupiah(
+            kembalian
+          )}</th></tr>`;
+        }
+        html += "</tbody></table>";
+        keranjangDiv.innerHTML = html;
+        saveData();
+      }
+
+      function batalItem(index) {
+        const item = keranjang[index];
+        if (!item) return;
+        const produk = produkToko.find((p) => p.id === item.id);
+        if (produk) produk.stok += item.jumlah;
+        keranjang.splice(index, 1);
+        renderTabel(searchInput.value);
+        renderKeranjang();
+      }
+
+      // 🔹 Cetak Struk
+      function cetakStruk() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const now = new Date();
+        const waktu = now.toLocaleString("id-ID");
+        doc.setFontSize(14);
+        doc.text("Struk Belanja", 10, 10);
+        doc.text(`Waktu: ${waktu}`, 10, 20);
+        const namaPlg = namaPelanggan.value.trim() || "-";
+        doc.text(`Pelanggan: ${namaPlg}`, 10, 30);
+        let y = 45;
+        let grandTotal = 0;
+        keranjang.forEach((k) => {
+          doc.text(
+            `${k.nama} x${k.jumlah} @ ${fmtRupiah(k.harga)} = ${fmtRupiah(
+              k.total
+            )}`,
+            10,
+            y
+          );
+          y += 10;
+          grandTotal += k.total;
+        });
+        let diskonPersen = Number(diskonManual.value) || 0;
+        let diskon = grandTotal * (diskonPersen / 100);
+        let totalAkhir = grandTotal - diskon;
+        let bayar = Number(jumlahBayar.value) || 0;
+        let kembalian = bayar - totalAkhir;
+        doc.text(`Subtotal: ${fmtRupiah(grandTotal)}`, 10, y + 10);
+        if (diskonPersen > 0) {
+          doc.text(
+            `Diskon ${diskonPersen}%: -${fmtRupiah(diskon)}`,
+            10,
+            y + 20
+          );
+          doc.text(`Total Bayar: ${fmtRupiah(totalAkhir)}`, 10, y + 30);
+        } else doc.text(`Total Bayar: ${fmtRupiah(totalAkhir)}`, 10, y + 20);
+        if (bayar > 0) {
+          doc.text(`Bayar: ${fmtRupiah(bayar)}`, 10, y + 40);
+          doc.text(`Kembalian: ${fmtRupiah(kembalian)}`, 10, y + 50);
+        }
+        doc.save("struk-belanja.pdf");
+      }
+
+      searchInput.addEventListener("input", () =>
+        renderTabel(searchInput.value)
+      );
+      diskonManual.addEventListener("input", renderKeranjang);
+      jumlahBayar.addEventListener("input", renderKeranjang);
+
+      loadData();
+      renderTabel();
+      renderKeranjang();
+      form.btnSubmit.onclick = tambahProduk;
+      form.btnCancel.onclick = resetForm;
+    </script>
+  </body>
+</html>
