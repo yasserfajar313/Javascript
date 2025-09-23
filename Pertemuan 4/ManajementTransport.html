@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistem Manajemen Transportasi</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #0d0d1a, #1a1a2e);
+      color: #e0e0e0;
+    }
+    h2 {
+      text-align: center;
+      color: #00f0ff;
+      text-shadow: 0 0 6px #00f0ff, 0 0 12px #00c0ff;
+    }
+    .card {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: rgba(20,20,35,0.85);
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.15);
+    }
+    label { font-weight: 600; color: #00f0ff; display: block; margin-top: 10px;}
+    input, select {
+      width: 100%; padding: 10px; margin-top: 5px;
+      border: 1px solid #00f0ff; border-radius: 10px;
+      background: rgba(0,0,0,0.3); color: #fff;
+    }
+    button {
+      margin-top: 15px; padding: 10px 18px;
+      border: none; border-radius: 10px; cursor: pointer;
+      background: #00f0ff; color: #000; font-weight: 600;
+      transition: all .3s;
+    }
+    button:hover { background: #00c0ff; }
+    table {
+      width: 100%; margin-top: 20px; border-collapse: collapse;
+      background: rgba(20,20,35,0.9); border-radius: 12px; overflow: hidden;
+    }
+    th, td { padding: 10px; text-align: center; }
+    thead { background: #00f0ff; color: #000; }
+    tbody tr:nth-child(even){ background: rgba(0,0,0,0.2); }
+    tbody tr:hover { background: rgba(0,255,255,0.1); }
+    .aksi-btn {
+      display: flex; gap: 5px; justify-content: center;
+    }
+    .edit-btn { background: #ffc107; color: #000; }
+    .edit-btn:hover { background: #e0a800; }
+    .hapus-btn { background: #ff3b3b; color: #fff; }
+    .hapus-btn:hover { background: #cc2f2f; }
+    .selesai-btn { background: #28a745; color: #fff; }
+    .selesai-btn:hover { background: #218838; }
+    .overdue { background: rgba(255,0,0,0.25) !important; }
+    #search { margin: 10px 0; padding: 8px; width: 100%; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Sistem Manajemen Transportasi</h2>
+  <div class="card">
+    <h3>Form Sewa Kendaraan</h3>
+    
+    <input type="hidden" id="editIndex">
+    
+    <label for="tanggal">Tanggal Peminjaman</label>
+    <input type="date" id="tanggal">
+    
+    <label for="durasi">Durasi Pinjam (hari)</label>
+    <select id="durasi">
+      <option value="">-- Pilih Durasi --</option>
+      <option value="1">1 Hari</option>
+      <option value="2">2 Hari</option>
+      <option value="3">3 Hari</option>
+      <option value="5">5 Hari</option>
+      <option value="7">7 Hari</option>
+    </select>
+
+    <label for="nama">Nama Pelanggan</label>
+    <input type="text" id="nama" placeholder="Isi nama pelanggan">
+    
+    <label for="telepon">Nomor Telepon</label>
+    <input type="text" id="telepon" placeholder="Isi nomor telepon">
+    
+    <label for="kendaraan">Pilih Kendaraan</label>
+    <select id="kendaraan">
+      <option value="">-- Pilih --</option>
+      <option value="Motor">Motor</option>
+      <option value="Mobil">Mobil</option>
+      <option value="Bus">Bus</option>
+    </select>
+    
+    <label for="plat">Plat Nomor Kendaraan</label>
+    <input type="text" id="plat" placeholder="Contoh: B 1234 CD">
+    
+    <button onclick="simpanPelanggan()">Simpan</button>
+  </div>
+
+  <div class="card">
+    <h3>Daftar Pelanggan yang Menyewa</h3>
+    <input type="text" id="search" placeholder="Cari nama / plat ..." onkeyup="render()">
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal Pinjam</th>
+          <th>Jam Pinjam (Durasi)</th>
+          <th>Nama</th>
+          <th>No. Telepon</th>
+          <th>Kendaraan</th>
+          <th>Plat Nomor</th>
+          <th>Batas Peminjaman</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelPelanggan"></tbody>
+    </table>
+  </div>
+
+  <script>
+    class Kendaraan {
+      constructor(tipe, plat) {
+        this.tipe = tipe;
+        this.plat = plat;
+      }
+      infoKendaraan() { return this.tipe; }
+    }
+
+    class Pelanggan {
+      constructor(nama, nomorTelepon, kendaraanDisewa, tanggalPinjam, jamPinjam, batasPinjam, durasi, status="Dipinjam") {
+        this.nama = nama;
+        this.nomorTelepon = nomorTelepon;
+        this.kendaraanDisewa = kendaraanDisewa;
+        this.tanggalPinjam = tanggalPinjam;
+        this.jamPinjam = jamPinjam;
+        this.batasPinjam = batasPinjam;
+        this.durasi = durasi;
+        this.status = status;
+      }
+      infoPelanggan() {
+        return {
+          nama: this.nama,
+          telepon: this.nomorTelepon,
+          kendaraan: this.kendaraanDisewa.infoKendaraan(),
+          plat: this.kendaraanDisewa.plat,
+          tanggal: this.tanggalPinjam,
+          jam: `${this.jamPinjam} (${this.durasi} Hari)`,
+          batas: this.batasPinjam,
+          status: this.status
+        };
+      }
+    }
+
+    class SistemManajemenTransportasi {
+      constructor() {
+        this.daftarPelanggan = JSON.parse(localStorage.getItem("daftarPelanggan")) || [];
+      }
+      simpanStorage() { localStorage.setItem("daftarPelanggan", JSON.stringify(this.daftarPelanggan)); }
+      tambahPelanggan(p) { this.daftarPelanggan.push(p); this.simpanStorage(); }
+      hapusPelanggan(i) { this.daftarPelanggan.splice(i,1); this.simpanStorage(); }
+      editPelanggan(i,p) { this.daftarPelanggan[i]=p; this.simpanStorage(); }
+      tandaiSelesai(i){ this.daftarPelanggan[i].status="Selesai"; this.simpanStorage(); }
+      getAll() {
+        return this.daftarPelanggan.map(p => {
+          const k = new Kendaraan(p.kendaraanDisewa.tipe, p.kendaraanDisewa.plat);
+          return new Pelanggan(p.nama,p.nomorTelepon,k,p.tanggalPinjam,p.jamPinjam,p.batasPinjam,p.durasi,p.status);
+        });
+      }
+    }
+
+    const sistem = new SistemManajemenTransportasi();
+
+    function render() {
+      const tbody=document.getElementById("tabelPelanggan");
+      tbody.innerHTML="";
+      const now=new Date();
+      const keyword=document.getElementById("search").value.toLowerCase();
+
+      sistem.getAll().forEach((p,i)=>{
+        const info=p.infoPelanggan();
+        const batas=new Date(p.batasPinjam);
+        let status=p.status;
+        if(status!=="Selesai" && now>batas){status="Overdue";}
+        
+        // filter
+        if(keyword && !info.nama.toLowerCase().includes(keyword) && !info.plat.toLowerCase().includes(keyword)) return;
+
+        tbody.innerHTML+=`
+        <tr class="${status==="Overdue"?"overdue":""}">
+          <td>${info.tanggal}</td>
+          <td>${info.jam}</td>
+          <td>${info.nama}</td>
+          <td>${info.telepon}</td>
+          <td>${info.kendaraan}</td>
+          <td>${info.plat}</td>
+          <td>${info.batas}</td>
+          <td>${status}</td>
+          <td class="aksi-btn">
+            <button class="edit-btn" onclick="editPelanggan(${i})">Edit</button>
+            <button class="hapus-btn" onclick="hapusPelanggan(${i})">Hapus</button>
+            ${status!=="Selesai"?`<button class="selesai-btn" onclick="tandaiSelesai(${i})">✔</button>`:""}
+          </td>
+        </tr>`;
+      });
+    }
+
+    function simpanPelanggan() {
+      const tanggal=document.getElementById("tanggal").value;
+      const durasi=document.getElementById("durasi").value;
+      const nama=document.getElementById("nama").value.trim();
+      const telepon=document.getElementById("telepon").value.trim();
+      const kendaraanVal=document.getElementById("kendaraan").value;
+      const plat=document.getElementById("plat").value.trim();
+      const editIndex=document.getElementById("editIndex").value;
+
+      if(!tanggal||!durasi||!nama||!telepon||!kendaraanVal||!plat){
+        alert("Lengkapi semua data!");
+        return;
+      }
+
+      const now=new Date();
+      const jamPinjam=now.toLocaleTimeString("id-ID",{hour:'2-digit',minute:'2-digit'});
+      
+      const startDate=new Date(tanggal+"T00:00:00");
+      startDate.setHours(now.getHours(),now.getMinutes());
+      const batasDate=new Date(startDate);
+      batasDate.setDate(batasDate.getDate()+parseInt(durasi));
+      const batasPinjam=batasDate.toISOString().slice(0,16).replace("T"," ");
+
+      const kendaraan=new Kendaraan(kendaraanVal,plat);
+      const pelanggan=new Pelanggan(nama,telepon,kendaraan,tanggal,jamPinjam,batasPinjam,durasi);
+
+      if(editIndex===""){sistem.tambahPelanggan(pelanggan);} 
+      else {sistem.editPelanggan(editIndex,pelanggan);document.getElementById("editIndex").value="";}
+      
+      resetForm();
+      render();
+    }
+
+    function resetForm(){["tanggal","durasi","nama","telepon","kendaraan","plat"].forEach(id=>document.getElementById(id).value="");}
+
+    function hapusPelanggan(i){ if(confirm("Yakin ingin menghapus data ini?")){sistem.hapusPelanggan(i);render();}}
+    function editPelanggan(i){ const p=sistem.getAll()[i];document.getElementById("tanggal").value=p.tanggalPinjam;document.getElementById("durasi").value="";document.getElementById("nama").value=p.nama;document.getElementById("telepon").value=p.nomorTelepon;document.getElementById("kendaraan").value=p.kendaraanDisewa.tipe;document.getElementById("plat").value=p.kendaraanDisewa.plat;document.getElementById("editIndex").value=i;}
+    function tandaiSelesai(i){sistem.tandaiSelesai(i);render();}
+
+    render();
+  </script>
+</body>
+</html>
