@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Final - Aplikasi Produk Toko</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+/* === Global === */
+body {
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  margin: 20px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  color: #1f2937;
+  transition: background 0.5s;
+}
+
+/* === Headings === */
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 700;
+  font-size: 28px;
+  color: #15803d;
+  text-shadow: 0 0 4px rgba(21,128,61,0.2);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+/* === Grid Layout === */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* === Card (Fix: gaya lama + warna fresh) === */
+.form-card,
+.transaksi {
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.15),
+              0 0 50px rgba(34, 197, 94, 0.1);
+  backdrop-filter: blur(6px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.form-card:hover,
+.transaksi:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.3),
+              0 0 60px rgba(34, 197, 94, 0.2);
+}
+
+/* === Form Grid === */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+/* === Label === */
+label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #166534;
+}
+
+/* === Inputs & Selects === */
+input,
+select {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+input:focus,
+select:focus {
+  border-color: #15803d;
+  box-shadow: 0 0 6px rgba(22,163,74,0.3);
+  outline: none;
+}
+
+/* === Buttons === */
+.controls,
+.controls-struk {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+button {
+  padding: 12px 22px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+button:hover { transform: scale(1.05); }
+
+/* === Button Colors === */
+.btn-add { background: #16a34a; }
+.btn-add:hover { background: #15803d; }
+.btn-update { background: #fbbf24; color:#000; }
+.btn-update:hover { background: #f59e0b; }
+.btn-cancel { background: #ef4444; }
+.btn-cancel:hover { background: #dc2626; }
+.btn-pdf { background: #22c55e; }
+.btn-pdf:hover { background: #16a34a; }
+
+/* === Search Box === */
+.search-box {
+  max-width: 1200px;
+  margin: 25px auto;
+}
+.search-box input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.search-box input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 6px rgba(22,163,74,0.3);
+}
+
+/* === Table === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+thead {
+  background: #bbf7d0;
+  color: #14532d;
+}
+thead th {
+  padding: 14px;
+  text-align: left;
+}
+tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+tbody tr:nth-child(even) { background: #f9fafb; }
+tbody tr:hover {
+  background: #dcfce7;
+  transform: scale(1.01);
+}
+
+/* === Action Buttons === */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+.edit-btn {
+  background: #facc15;
+  color: #000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: all 0.3s;
+}
+.edit-btn:hover {
+  background: #eab308;
+  transform: scale(1.05);
+}
+.del-btn {
+  background: #ef4444;
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: all 0.3s;
+}
+.del-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  body { margin: 15px; }
+  .controls, .controls-struk {
+    flex-direction: column;
+    gap: 10px;
+  }
+  table thead { font-size: 14px; }
+  table tbody td { font-size: 14px; padding: 8px; }
+}
+@media (max-width: 480px) {
+  h2 { font-size: 20px; }
+  button { width: 100%; }
+  input, select { font-size: 14px; padding: 8px; }
+  .form-card, .transaksi { padding: 15px; }
+}
+  </style>
+</head>
+<body>
+  <h2>Aplikasi Manajemen Produk</h2>
+
+  <div class="main-grid">
+    <!-- === FORM PRODUK === -->
+    <div class="form-card">
+      <h3 id="form-title">Tambah Produk Baru</h3>
+      <form id="formProduk">
+        <div class="form-grid">
+          <div class="field">
+            <label for="idProduk">Kode ID</label>
+            <input type="text" id="idProduk" placeholder="Isi kode ID" />
+          </div>
+          <div class="field">
+            <label for="nama">Nama Produk</label>
+            <input type="text" id="nama" placeholder="Nama produk" />
+          </div>
+          <div class="field">
+            <label for="stok">Stok</label>
+            <input type="number" id="stok" value="0" min="0" />
+          </div>
+          <div class="field">
+            <label for="harga">Harga (Rp)</label>
+            <input type="number" id="harga" value="0" min="0" />
+          </div>
+        </div>
+        <div class="controls">
+          <button id="btn-submit" class="btn-add">Tambah Produk</button>
+          <button id="btn-cancel" type="button" class="btn-cancel" style="display:none">Batal</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- === FORM TRANSAKSI === -->
+    <div class="transaksi">
+      <h3>Transaksi Belanja</h3>
+      <div class="field">
+        <label for="namaPelanggan">Nama Pelanggan</label>
+        <input type="text" id="namaPelanggan" placeholder="Masukkan nama pelanggan"/>
+      </div>
+      <form id="formTransaksi">
+        <select id="produkSelect" required></select>
+        <input type="number" id="jumlahBeli" placeholder="Jumlah Beli" required min="1"/>
+        <div class="field">
+          <label for="diskonManual">Diskon (%)</label>
+          <input type="number" id="diskonManual" value="0" min="0" max="100"/>
+        </div>
+        <div class="field">
+          <label for="jumlahBayar">Jumlah Bayar</label>
+          <input type="number" id="jumlahBayar" placeholder="Masukkan uang bayar"/>
+        </div>
+        <div class="controls-struk">
+          <button id="btn-keranjang" class="btn-add">+ Tambah ke Keranjang</button>
+          <button type="button" class="btn-pdf" id="btn-struk">🖨 Cetak Struk</button>
+        </div>
+      </form>
+      <div id="daftarKeranjang"></div>
+    </div>
+  </div>
+
+  <!-- === SEARCH & TABLE === -->
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Cari produk..." />
+  </div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Nama</th><th>Harga</th><th>Stok</th><th>Waktu Input</th><th>Aksi</th></tr>
+    </thead>
+    <tbody id="dataProduk"></tbody>
+  </table>
+
+  <script>
+    let produkToko = [];
+    let keranjang = [];
+    let editingId = null;
+
+    const form = {
+      id: document.getElementById("idProduk"),
+      nama: document.getElementById("nama"),
+      harga: document.getElementById("harga"),
+      stok: document.getElementById("stok"),
+      btnSubmit: document.getElementById("btn-submit"),
+      btnCancel: document.getElementById("btn-cancel"),
+      title: document.getElementById("form-title"),
+    };
+    const formProduk = document.getElementById("formProduk");
+    const formTransaksi = document.getElementById("formTransaksi");
+    const tableBody = document.getElementById("dataProduk");
+    const searchInput = document.getElementById("search");
+    const produkSelect = document.getElementById("produkSelect");
+    const keranjangDiv = document.getElementById("daftarKeranjang");
+    const diskonManual = document.getElementById("diskonManual");
+    const namaPelanggan = document.getElementById("namaPelanggan");
+    const jumlahBayar = document.getElementById("jumlahBayar");
+
+    const fmtRupiah = (n) => "Rp " + (Number(n) || 0).toLocaleString("id-ID");
+
+    // === Data Awal ===
+    function loadData() {
+      produkToko = [
+        { id: "P-001", nama: "Laptop", harga: 7000000, stok: 5, waktuInput: new Date().toLocaleString() },
+        { id: "P-002", nama: "Mouse", harga: 200000, stok: 10, waktuInput: new Date().toLocaleString() },
+        { id: "P-003", nama: "Keyboard", harga: 350000, stok: 7, waktuInput: new Date().toLocaleString() },
+        { id: "P-004", nama: "Monitor", harga: 2500000, stok: 4, waktuInput: new Date().toLocaleString() },
+        { id: "P-005", nama: "Headphone", harga: 500000, stok: 8, waktuInput: new Date().toLocaleString() },
+      ];
+    }
+
+    // === Render Tabel ===
+    function renderTabel(filter = "") {
+      tableBody.innerHTML = "";
+      produkToko
+        .filter((p) => p.nama.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(({ id, nama, harga, stok, waktuInput }) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${id}</td>
+            <td>${nama}</td>
+            <td>${fmtRupiah(harga)}</td>
+            <td>${stok}</td>
+            <td>${waktuInput}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="edit-btn" data-id="${id}">Edit</button>
+                <button class="del-btn" data-id="${id}">Hapus</button>
+              </div>
+            </td>`;
+          tableBody.appendChild(row);
+        });
+
+      produkSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+      produkToko.forEach(({ id, nama, harga, stok }) => {
+        produkSelect.innerHTML += `<option value="${id}">${nama} - ${fmtRupiah(harga)} (stok ${stok})</option>`;
+      });
+    }
+
+    // === Tambah Produk (Rest + Spread) ===
+    function tambahProduk(...produkBaru) {
+      produkToko = [...produkToko, ...produkBaru];
+      renderTabel(searchInput.value);
+      resetForm();
+    }
+
+    function handleTambah(e) {
+      e.preventDefault(); // preventDefault()
+      const id = form.id.value.trim();
+      const nama = form.nama.value.trim();
+      const harga = Number(form.harga.value) || 0;
+      const stok = Number(form.stok.value) || 0;
+      if (!id || !nama) return alert("ID dan Nama wajib diisi!");
+      if (produkToko.find((p) => p.id === id)) return alert("ID sudah ada!");
+      tambahProduk({ id, nama, harga, stok, waktuInput: new Date().toLocaleString() });
+    }
+
+    function hapusProduk(id) {
+      if (!confirm("Yakin ingin menghapus produk ini?")) return;
+      produkToko = produkToko.filter((p) => p.id !== id);
+      renderTabel(searchInput.value);
+    }
+
+    // === Edit Produk ===
+    function startEdit(id) {
+      const p = produkToko.find((x) => x.id === id);
+      if (!p) return;
+      editingId = id;
+      form.title.innerText = "Edit Produk";
+      form.btnSubmit.innerText = "Simpan Perubahan";
+      form.btnSubmit.className = "btn-update";
+      form.id.value = p.id;
+      form.id.disabled = true;
+      form.nama.value = p.nama;
+      form.harga.value = p.harga;
+      form.stok.value = p.stok;
+    }
+
+    function updateProduk(e) {
+      e.preventDefault();
+      if (!editingId) return;
+      const nama = form.nama.value.trim();
+      const harga = Number(form.harga.value) || 0;
+      const stok = Number(form.stok.value) || 0;
+      const index = produkToko.findIndex((p) => p.id === editingId);
+      produkToko[index] = { ...produkToko[index], nama, harga, stok };
+      renderTabel(searchInput.value);
+      resetForm();
+    }
+
+    // === Event Delegation Edit/Hapus ===
+    tableBody.addEventListener("click", (event) => {
+      if (event.target.classList.contains("edit-btn")) startEdit(event.target.dataset.id);
+      if (event.target.classList.contains("del-btn")) hapusProduk(event.target.dataset.id);
+    });
+
+    // === Reset Form ===
+    function resetForm() {
+      form.id.value = "";
+      form.id.disabled = false;
+      form.nama.value = "";
+      form.harga.value = 0;
+      form.stok.value = 0;
+      form.title.innerText = "Tambah Produk Baru";
+      form.btnSubmit.innerText = "Tambah Produk";
+      form.btnSubmit.className = "btn-add";
+      editingId = null;
+    }
+
+    // === Keranjang ===
+    formTransaksi.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const produkId = produkSelect.value;
+      const jumlah = Number(document.getElementById("jumlahBeli").value);
+      if (!produkId || !jumlah) return;
+      const produk = produkToko.find((p) => p.id === produkId);
+      if (!produk || jumlah > produk.stok) return alert("Stok tidak cukup!");
+      produk.stok -= jumlah;
+      let item = keranjang.find((k) => k.id === produk.id);
+      if (item) {
+        item.jumlah += jumlah;
+        item.total = item.jumlah * produk.harga;
+      } else {
+        keranjang.push({ ...produk, jumlah, total: jumlah * produk.harga });
+      }
+      renderTabel(searchInput.value);
+      renderKeranjang();
+      formTransaksi.reset();
+    });
+
+    function renderKeranjang() {
+      if (keranjang.length === 0) {
+        keranjangDiv.innerHTML = "<p>Keranjang masih kosong.</p>";
+        return;
+      }
+      let html = "<table><thead><tr><th>Nama</th><th>Harga</th><th>Jumlah</th><th>Total</th><th>Aksi</th></tr></thead><tbody>";
+      let grandTotal = 0, totalItem = 0;
+      keranjang.forEach((k, i) => {
+        html += `<tr>
+          <td>${k.nama}</td>
+          <td>${fmtRupiah(k.harga)}</td>
+          <td>${k.jumlah}</td>
+          <td>${fmtRupiah(k.total)}</td>
+          <td><button class="del-btn" data-index="${i}">Batal</button></td>
+        </tr>`;
+        grandTotal += k.total;
+        totalItem += k.jumlah;
+      });
+      let diskonPersen = Number(diskonManual.value) || 0;
+      let diskon = grandTotal * (diskonPersen / 100);
+      let totalAkhir = grandTotal - diskon;
+      let bayar = Number(jumlahBayar.value) || 0;
+      let kembalian = bayar - totalAkhir;
+      html += `<tr><th colspan="4">Total Item</th><th>${totalItem}</th></tr>`;
+      html += `<tr><th colspan="4">Subtotal</th><th>${fmtRupiah(grandTotal)}</th></tr>`;
+      if (diskonPersen > 0) html += `<tr><th colspan="4">Diskon</th><th>- ${fmtRupiah(diskon)}</th></tr>`;
+      html += `<tr><th colspan="4">Total</th><th>${fmtRupiah(totalAkhir)}</th></tr>`;
+      if (bayar > 0) {
+        html += `<tr><th colspan="4">Bayar</th><th>${fmtRupiah(bayar)}</th></tr>`;
+        html += `<tr><th colspan="4">Kembalian</th><th>${fmtRupiah(kembalian)}</th></tr>`;
+      }
+      html += "</tbody></table>";
+      keranjangDiv.innerHTML = html;
+    }
+
+    // === Event Delegation Batal Item Keranjang ===
+    keranjangDiv.addEventListener("click", (e) => {
+      if (e.target.classList.contains("del-btn")) {
+        const idx = e.target.dataset.index;
+        const item = keranjang[idx];
+        const produk = produkToko.find((p) => p.id === item.id);
+        if (produk) produk.stok += item.jumlah; 
+        keranjang.splice(idx, 1);
+        renderTabel(searchInput.value);
+        renderKeranjang();
+      }
+    });
+
+    // === Cetak Struk ===
+    document.getElementById("btn-struk").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text("Struk Belanja", 10, 10);
+      doc.text(`Pelanggan: ${namaPelanggan.value}`, 10, 20);
+      let y = 30, grandTotal = 0, totalItem = 0;
+      keranjang.forEach((k) => {
+        doc.text(`${k.nama} x${k.jumlah} = ${fmtRupiah(k.total)}`, 10, y);
+        y += 10; grandTotal += k.total; totalItem += k.jumlah;
+      });
+      let diskonPersen = Number(diskonManual.value) || 0;
+      let diskon = grandTotal * (diskonPersen / 100);
+      let totalAkhir = grandTotal - diskon;
+      let bayar = Number(jumlahBayar.value) || 0;
+      let kembalian = bayar - totalAkhir;
+      doc.text(`Total Item: ${totalItem}`, 10, y + 10);
+      doc.text(`Total: ${fmtRupiah(totalAkhir)}`, 10, y + 20);
+      doc.text(`Bayar: ${fmtRupiah(bayar)}`, 10, y + 30);
+      doc.text(`Kembalian: ${fmtRupiah(kembalian)}`, 10, y + 40);
+      doc.save("struk.pdf");
+    });
+
+    // === Init ===
+    loadData();
+    renderTabel();
+    renderKeranjang();
+    formProduk.addEventListener("submit", (e) => {
+      if (editingId) updateProduk(e); else handleTambah(e);
+    });
+    form.btnCancel.addEventListener("click", resetForm);
+    searchInput.addEventListener("input", () => renderTabel(searchInput.value));
+    diskonManual.addEventListener("input", renderKeranjang);
+    jumlahBayar.addEventListener("input", renderKeranjang);
+  </script>
+</body>
+</html>
