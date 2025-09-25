@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aplikasi Data Pegawai</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+/* === Global === */
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 24px;
+  background: #f7f9fc;
+  color: #2c3e50;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* === Form === */
+.form-card {
+  max-width: 1280px;
+  margin: 0 auto 24px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 28px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+input,
+select {
+  padding: 10px 14px;
+  border: 1px solid #d0d6dc;
+  border-radius: 8px;
+}
+
+/* === Controls / Button === */
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Button Variants */
+.btn-add { background: #3498db; color: #fff; }
+.btn-update { background: #27ae60; color: #fff; }
+.btn-cancel { background: #95a5a6; color: #fff; }
+.btn-pdf { background: #e74c3c; color: #fff; }
+.btn-reset { background: #8e44ad; color: #fff; }
+
+/* === Search Box === */
+.search-container {
+  max-width: 1280px;
+  margin: 20px auto;
+}
+
+#search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* === Table === */
+table {
+  width: 1280px;
+  max-width: 100%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+thead {
+  background: #2c3e50;
+  color: #fff;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+tbody tr:nth-child(even) { background: #fcfdfe; }
+tbody tr:hover { background: #f0f6ff; }
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.edit-btn {
+  background: #f1c40f;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.del-btn {
+  background: #e74c3c;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* Footer Table */
+tfoot {
+  background: #ecf0f1;
+  font-weight: bold;
+}
+  </style>
+</head>
+<body>
+  <h2>Aplikasi Data Pegawai</h2>
+
+  <!-- Form Input -->
+  <div class="form-card">
+    <h3 id="form-title">Tambah Pegawai Baru</h3>
+    <div class="form-grid">
+      <div class="field"><label>Nama</label><input type="text" id="nama"></div>
+      <div class="field"><label>Jenis Kelamin</label>
+        <select id="jk">
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+      <div class="field"><label>Umur</label><input type="number" id="umur"></div>
+      <div class="field"><label>Alamat</label><input type="text" id="alamat"></div>
+      <div class="field"><label>Email</label><input type="email" id="email"></div>
+    </div>
+    <div class="controls">
+      <button id="btn-submit" class="btn-add">Tambah Pegawai</button>
+      <button id="btn-cancel" class="btn-cancel" style="display:none;">Batal</button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-container">
+    <input type="search" id="search-input" placeholder="🔍 Cari Nama, Alamat, atau Email...">
+  </div>
+
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th><th>JK</th><th>Umur</th><th>Alamat</th><th>Email</th><th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="dataPegawai"></tbody>
+    <tfoot><tr><td colspan="6" align="center">Total Pegawai: <span id="totalPegawai">0</span></td></tr></tfoot>
+  </table>
+
+  <div style="text-align:center;margin-top:20px;">
+    <button class="btn-pdf" onclick="cetakPDF()">Cetak PDF</button>
+  </div>
+
+<script>
+/* === LocalStorage Setup === */
+const STORAGE_KEY = "dataPegawaiApp";
+
+const defaultData = [
+  { nama:"Yasser", jk:"Laki-laki", umur:21, alamat:"Jakarta", email:"yasser@mail.com" },
+  { nama:"Fadilah", jk:"Perempuan", umur:20, alamat:"Bandung", email:"fadilah@mail.com" },
+  { nama:"Siti", jk:"Perempuan", umur:19, alamat:"Yogyakarta", email:"siti@mail.com" },
+  { nama:"Andi", jk:"Laki-laki", umur:23, alamat:"Medan", email:"andi@mail.com" },
+  { nama:"Dewi", jk:"Perempuan", umur:24, alamat:"Palembang", email:"dewi@mail.com" },
+  { nama:"Rizky", jk:"Laki-laki", umur:20, alamat:"Bogor", email:"rizky@mail.com" },
+  { nama:"Putri", jk:"Perempuan", umur:22, alamat:"Malang", email:"putri@mail.com" },
+  { nama:"Agus", jk:"Laki-laki", umur:25, alamat:"Semarang", email:"agus@mail.com" },
+  { nama:"Nina", jk:"Perempuan", umur:21, alamat:"Bekasi", email:"nina@mail.com" },
+  { nama:"Lina", jk:"Perempuan", umur:23, alamat:"Depok", email:"lina@mail.com" },
+  { nama:"Tono", jk:"Laki-laki", umur:24, alamat:"Cirebon", email:"tono@mail.com" }
+];
+
+/* ngambil dari localStorage bisa pake deflut juga*/
+let pegawai = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData;
+
+/* nyimpen ke localStorage */
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(pegawai));
+}
+
+let editingId = null;
+const form = {
+  nama: document.getElementById("nama"),
+  jk: document.getElementById("jk"),
+  umur: document.getElementById("umur"),
+  alamat: document.getElementById("alamat"),
+  email: document.getElementById("email"),
+  btnSubmit: document.getElementById("btn-submit"),
+  btnCancel: document.getElementById("btn-cancel")
+};
+
+function renderTabel() {
+  const tbody = document.getElementById("dataPegawai");
+  const totalCell = document.getElementById("totalPegawai");
+  const q = document.getElementById("search-input").value.toLowerCase();
+
+  tbody.innerHTML = "";
+  pegawai
+    .filter(
+      (p) =>
+        p.nama.toLowerCase().includes(q) ||
+        p.alamat.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q)
+    )
+    .forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.nama}</td>
+        <td>${p.jk}</td>
+        <td>${p.umur}</td>
+        <td>${p.alamat}</td>
+        <td>${p.email}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="startEdit(${idx})">Edit</button>
+            <button class="del-btn" onclick="hapusPegawai(${idx})">Hapus</button>
+          </div>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+  totalCell.innerText = pegawai.length;
+  saveData(); //menyimpan data 
+}
+
+function readForm() {
+  return {
+    nama: form.nama.value,
+    jk: form.jk.value,
+    umur: +form.umur.value,
+    alamat: form.alamat.value,
+    email: form.email.value
+  };
+}
+
+function tambahPegawai() {
+  const d = readForm();
+  if (!d.nama) return alert("Nama wajib diisi");
+  pegawai.push(d);
+  renderTabel();
+  resetForm();
+}
+
+function startEdit(i) {
+  const p = pegawai[i];
+  editingId = i;
+  form.nama.value = p.nama;
+  form.jk.value = p.jk;
+  form.umur.value = p.umur;
+  form.alamat.value = p.alamat;
+  form.email.value = p.email;
+  form.btnSubmit.innerText = "Simpan";
+  form.btnSubmit.className = "btn-update";
+  form.btnSubmit.onclick = updatePegawai;
+  form.btnCancel.style.display = "inline-block";
+}
+
+function updatePegawai() {
+  const d = readForm();
+  if (!d.nama) return;
+  pegawai[editingId] = d;
+  renderTabel();
+  resetForm();
+}
+
+function hapusPegawai(i) {
+  if (!confirm("Hapus pegawai ini?")) return;
+  pegawai.splice(i, 1);
+  renderTabel();
+}
+
+function resetForm() {
+  editingId = null;
+  form.nama.value = "";
+  form.umur.value = "";
+  form.alamat.value = "";
+  form.email.value = "";
+  form.jk.value = "Laki-laki";
+  form.btnSubmit.innerText = "Tambah Pegawai";
+  form.btnSubmit.className = "btn-add";
+  form.btnSubmit.onclick = tambahPegawai;
+  form.btnCancel.style.display = "none";
+}
+
+function cetakPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Laporan Pegawai", 14, 20);
+  const head = [["Nama", "JK", "Umur", "Alamat", "Email"]];
+  const body = pegawai.map((p) => [p.nama, p.jk, p.umur, p.alamat, p.email]);
+  doc.autoTable({ head: [head], body, startY: 30 });
+  doc.save("laporan_pegawai.pdf");
+}
+
+/* Inisialisasi */
+form.btnSubmit.onclick = tambahPegawai;
+form.btnCancel.onclick = resetForm;
+document.getElementById("search-input").addEventListener("input", renderTabel);
+renderTabel();
+</script>
+</body>
+</html>
